@@ -7,9 +7,10 @@ Closed track sections:
 Jubilee: Green Park - Bond Street - closed
 Jubilee: Bond Street - Green Park - closed
 
-Route from Baker Street to King's Cross:
-1. Circle: Baker Street to King's Cross 3.0 min
-Total Journey Time: 3.0 minutes
+Route from Paddington to King's Cross:
+1. Circle: Paddington to Baker Street 2.5 min
+2. Circle: Baker Street to King's Cross 3.0 min
+Total Journey Time: 5.5 minutes
 
 Station: Baker Street
 Lines: Circle,Jubilee

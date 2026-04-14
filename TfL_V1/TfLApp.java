@@ -1,15 +1,23 @@
 import java.util.Scanner;
 
 public class TfLApp {
+    // Fixed-size hand-coded graph model for Version 1.
     static final int NUM_STATIONS = 10;
+    // Station lookup by index.
     static String[] stationNames = {"Baker Street", "Bond Street", "Green Park", "Victoria", "Warren Street", "Oxford Circus", "Paddington", "King's Cross", "Euston", "Camden Town"};
+    // Base travel time for directed edge i -> j (0 means no direct edge).
     static double[][] baseTimes = new double[NUM_STATIONS][NUM_STATIONS];
+    // Track closure state for directed edge i -> j.
     static boolean[][] closed = new boolean[NUM_STATIONS][NUM_STATIONS];
+    // Delay minutes applied to directed edge i -> j.
     static double[][] delays = new double[NUM_STATIONS][NUM_STATIONS];
+    // Line name for directed edge i -> j.
     static String[][] lines = new String[NUM_STATIONS][NUM_STATIONS];
+    // Interchange cost when moving from one line to a different line.
     static final double INTERCHANGE_TIME = 2.0;
 
     static {
+        // Build a simplified, directed representation of Circle/Jubilee/Victoria links.
         // Circle: Paddington(6) - Baker(0) - King's Cross(7) - Euston(8) - Camden(9) - Paddington
         baseTimes[6][0] = 2.5; baseTimes[0][6] = 2.5; lines[6][0] = "Circle"; lines[0][6] = "Circle";
         baseTimes[0][7] = 3.0; baseTimes[7][0] = 3.0; lines[0][7] = "Circle"; lines[7][0] = "Circle";
@@ -28,26 +36,31 @@ public class TfLApp {
         baseTimes[5][2] = 3.0; baseTimes[2][5] = 3.0; lines[5][2] = "Victoria"; lines[2][5] = "Victoria";
     }
 
+    // Adds delay to both directions for this section.
     static void addDelay(int from, int to, double delay) {
         delays[from][to] += delay;
         delays[to][from] += delay; // bidirectional
     }
 
+    // Removes delay (floored at zero) in both directions.
     static void removeDelay(int from, int to, double delay) {
         delays[from][to] = Math.max(0, delays[from][to] - delay);
         delays[to][from] = Math.max(0, delays[to][from] - delay);
     }
 
+    // Closes both directions of a section.
     static void closeTrack(int from, int to) {
         closed[from][to] = true;
         closed[to][from] = true;
     }
 
+    // Opens both directions of a section.
     static void openTrack(int from, int to) {
         closed[from][to] = false;
         closed[to][from] = false;
     }
 
+    // Prints all closed sections once (upper-triangle only to avoid duplicates).
     static void printClosed() {
         System.out.println("Closed track sections:");
         for (int i = 0; i < NUM_STATIONS; i++) {
@@ -59,6 +72,7 @@ public class TfLApp {
         }
     }
 
+    // Prints every directed section currently carrying extra delay.
     static void printDelayed() {
         System.out.println("Delayed track sections:");
         for (int i = 0; i < NUM_STATIONS; i++) {
@@ -72,6 +86,7 @@ public class TfLApp {
         }
     }
 
+    // Dijkstra shortest-path by time with closure, delay, and interchange costs.
     static void findRoute(int start, int end) {
         double[] dist = new double[NUM_STATIONS];
         boolean[] visited = new boolean[NUM_STATIONS];
@@ -108,7 +123,7 @@ public class TfLApp {
             return;
         }
 
-        // Reconstruct path
+        // Reconstruct path from end back to start.
         int[] path = new int[NUM_STATIONS];
         String[] pathLines = new String[NUM_STATIONS];
         int pathIndex = 0;
@@ -117,7 +132,7 @@ public class TfLApp {
             pathLines[pathIndex] = prevLine[at];
             pathIndex++;
         }
-        // Reverse
+        // Reverse into start -> end order.
         for (int i = 0; i < pathIndex / 2; i++) {
             int temp = path[i];
             path[i] = path[pathIndex - 1 - i];
@@ -127,7 +142,7 @@ public class TfLApp {
             pathLines[pathIndex - 1 - i] = tempLine;
         }
 
-        // Set pathLines to the line for each segment
+        // Fill line names per segment.
         for (int i = 0; i < pathIndex - 1; i++) {
             pathLines[i] = lines[path[i]][path[i + 1]];
         }
@@ -153,6 +168,7 @@ public class TfLApp {
         System.out.println("Total Journey Time: " + totalTime + " minutes");
     }
 
+    // Returns index of the next unvisited node with smallest distance.
     static int minDistance(double[] dist, boolean[] visited) {
         double min = Double.MAX_VALUE;
         int minIndex = -1;
@@ -165,6 +181,7 @@ public class TfLApp {
         return minIndex;
     }
 
+    // Prints station lines and immediate direct connections.
     static void printStationInfo(int station) {
         System.out.println("Station: " + stationNames[station]);
         System.out.println("Lines: ");
@@ -187,6 +204,7 @@ public class TfLApp {
         }
     }
 
+    // Prints all stations with menu-friendly numbering.
     static void printStations() {
         System.out.println("Stations:");
         for (int i = 0; i < NUM_STATIONS; i++) {
@@ -194,6 +212,7 @@ public class TfLApp {
         }
     }
 
+    // Console menu for engineer/customer operations.
     static void showMenu() {
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -282,6 +301,7 @@ public class TfLApp {
         scanner.close();
     }
 
+    // Deterministic sample run used to generate the coursework output file.
     static void runSample() {
         System.out.println("=== TfL Application Version 1 ===");
         addDelay(0, 1, 5.0); // Baker to Bond 5 min delay
@@ -290,7 +310,7 @@ public class TfLApp {
         printDelayed();
         printClosed();
         System.out.println();
-        findRoute(0, 7); // Baker to King's Cross
+        findRoute(6, 7); // Paddington to King's Cross (multi-stop)
         System.out.println();
         printStationInfo(0); // Baker Street
     }

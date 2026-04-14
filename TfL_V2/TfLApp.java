@@ -1,6 +1,7 @@
 import java.util.*;
 
 public class TfLApp {
+    // Edge in the adjacency list graph.
     static class Edge {
         String to;
         double time;
@@ -12,6 +13,7 @@ public class TfLApp {
         }
     }
 
+    // Priority queue node for Dijkstra.
     static class Node implements Comparable<Node> {
         String station;
         double dist;
@@ -24,13 +26,16 @@ public class TfLApp {
         }
     }
 
+    // Graph and operational state for Version 2 (library-based implementation).
     static Map<String, List<Edge>> graph = new HashMap<>();
     static Map<String, Map<String, Boolean>> closed = new HashMap<>();
     static Map<String, Map<String, Double>> delays = new HashMap<>();
     static Map<String, String> stationLines = new HashMap<>();
+    // Interchange penalty between different lines.
     static final double INTERCHANGE_TIME = 2.0;
 
     static {
+        // Initialize station containers for a simplified demo network.
         String[] stations = {"Baker Street", "Bond Street", "Green Park", "Victoria", "Warren Street", "Oxford Circus", "Paddington", "King's Cross", "Euston", "Camden Town"};
         for (String s : stations) {
             graph.put(s, new ArrayList<>());
@@ -38,6 +43,7 @@ public class TfLApp {
             delays.put(s, new HashMap<>());
         }
 
+        // Circle line sample links.
         // Circle
         addEdge("Paddington", "Baker Street", 2.5, "Circle");
         addEdge("Baker Street", "King's Cross", 3.0, "Circle");
@@ -45,16 +51,19 @@ public class TfLApp {
         addEdge("Euston", "Camden Town", 2.5, "Circle");
         addEdge("Camden Town", "Paddington", 4.0, "Circle");
 
+        // Jubilee line sample links.
         // Jubilee
         addEdge("Baker Street", "Bond Street", 2.0, "Jubilee");
         addEdge("Bond Street", "Green Park", 2.5, "Jubilee");
         addEdge("Green Park", "Victoria", 3.0, "Jubilee");
 
+        // Victoria line sample links.
         // Victoria
         addEdge("Victoria", "Warren Street", 2.0, "Victoria");
         addEdge("Warren Street", "Oxford Circus", 2.5, "Victoria");
         addEdge("Oxford Circus", "Green Park", 3.0, "Victoria");
 
+        // Simple station -> lines summary for station info output.
         // Station lines
         stationLines.put("Baker Street", "Circle,Jubilee");
         stationLines.put("Bond Street", "Jubilee");
@@ -68,6 +77,7 @@ public class TfLApp {
         stationLines.put("Camden Town", "Circle");
     }
 
+    // Adds a bidirectional section and initializes status/delay metadata.
     static void addEdge(String from, String to, double time, String line) {
         graph.get(from).add(new Edge(to, time, line));
         graph.get(to).add(new Edge(from, time, line)); // bidirectional
@@ -77,26 +87,31 @@ public class TfLApp {
         delays.get(to).put(from, 0.0);
     }
 
+    // Adds delay to both directions.
     static void addDelay(String from, String to, double delay) {
         delays.get(from).put(to, delays.get(from).get(to) + delay);
         delays.get(to).put(from, delays.get(to).get(from) + delay);
     }
 
+    // Removes delay (floored at zero) for both directions.
     static void removeDelay(String from, String to, double delay) {
         delays.get(from).put(to, Math.max(0, delays.get(from).get(to) - delay));
         delays.get(to).put(from, Math.max(0, delays.get(to).get(from) - delay));
     }
 
+    // Closes both directions of a section.
     static void closeTrack(String from, String to) {
         closed.get(from).put(to, true);
         closed.get(to).put(from, true);
     }
 
+    // Opens both directions of a section.
     static void openTrack(String from, String to) {
         closed.get(from).put(to, false);
         closed.get(to).put(from, false);
     }
 
+    // Prints current closed sections.
     static void printClosed() {
         System.out.println("Closed track sections:");
         for (String from : graph.keySet()) {
@@ -108,6 +123,7 @@ public class TfLApp {
         }
     }
 
+    // Prints sections where operational delays are active.
     static void printDelayed() {
         System.out.println("Delayed track sections:");
         for (String from : delays.keySet()) {
@@ -122,6 +138,7 @@ public class TfLApp {
         }
     }
 
+    // Helper: returns base edge time for directed section.
     static double getBaseTime(String from, String to) {
         for (Edge e : graph.get(from)) {
             if (e.to.equals(to)) return e.time;
@@ -129,6 +146,7 @@ public class TfLApp {
         return 0;
     }
 
+    // Helper: returns line name for directed section.
     static String getLine(String from, String to) {
         for (Edge e : graph.get(from)) {
             if (e.to.equals(to)) return e.line;
@@ -136,6 +154,7 @@ public class TfLApp {
         return "";
     }
 
+    // Dijkstra shortest-path by time with closure, delay, and line interchange cost.
     static void findRoute(String start, String end) {
         Map<String, Double> dist = new HashMap<>();
         Map<String, String> prev = new HashMap<>();
@@ -174,7 +193,7 @@ public class TfLApp {
             return;
         }
 
-        // Reconstruct path
+        // Reconstruct path from end to start, then reverse.
         List<String> path = new ArrayList<>();
         List<String> pathLines = new ArrayList<>();
         for (String at = end; at != null; at = prev.get(at)) {
@@ -205,6 +224,7 @@ public class TfLApp {
         System.out.println("Total Journey Time: " + totalTime + " minutes");
     }
 
+    // Prints full station summary with lines and immediate connections.
     static void printStationInfo(String station) {
         System.out.println("Station: " + station);
         System.out.println("Lines: " + stationLines.get(station));
@@ -215,6 +235,7 @@ public class TfLApp {
         }
     }
 
+    // Prints menu-friendly station numbering.
     static void printStations() {
         System.out.println("Stations:");
         int index = 1;
@@ -223,6 +244,7 @@ public class TfLApp {
         }
     }
 
+    // Console menu for user operations.
     static void showMenu() {
         Scanner scanner = new Scanner(System.in);
         List<String> stationList = new ArrayList<>(graph.keySet());
@@ -326,6 +348,7 @@ public class TfLApp {
         scanner.close();
     }
 
+    // Deterministic sample run used to generate Version 2 output file.
     static void runSample() {
         System.out.println("=== TfL Application Version 2 ===");
         addDelay("Baker Street", "Bond Street", 5.0);
@@ -334,7 +357,7 @@ public class TfLApp {
         printDelayed();
         printClosed();
         System.out.println();
-        findRoute("Baker Street", "King's Cross");
+        findRoute("Paddington", "King's Cross");
         System.out.println();
         printStationInfo("Baker Street");
     }
