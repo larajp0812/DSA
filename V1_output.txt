@@ -1,0 +1,20 @@
+=== TfL Application Version 1 ===
+After adding delay and closing track:
+Delayed track sections:
+Jubilee: Baker Street to Bond Street - 2.0 min normal, 7.0 min delayed
+Jubilee: Bond Street to Baker Street - 2.0 min normal, 7.0 min delayed
+Closed track sections:
+Jubilee: Bond Street - Green Park - closed
+
+Route from Baker Street to King's Cross:
+1. Circle: Baker Street to King's Cross 3.0 min
+Total Journey Time: 3.0 minutes
+
+Station: Baker Street
+Lines: 
+- Circle
+- Jubilee
+Connections:
+- Bond Street via Jubilee 7.0 min
+- Paddington via Circle 2.5 min
+- King's Cross via Circle 3.0 min
