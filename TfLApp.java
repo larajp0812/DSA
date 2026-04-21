@@ -159,6 +159,7 @@ public class TfLApp {
             if (!currentLine.equals(line)) {
                 if (!currentLine.equals("")) {
                     System.out.println("Change: " + currentLine + " to " + line + " " + INTERCHANGE_TIME + " min");
+                    totalTime+= INTERCHANGE_TIME;
                 }
                 currentLine = line;
             }
