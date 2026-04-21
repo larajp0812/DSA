@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class TfLApp {
+public class TfLAppv2 {
     // Edge in the adjacency list graph.
     static class Edge {
         String to;
