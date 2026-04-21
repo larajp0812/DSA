@@ -860,9 +860,10 @@ public class TfLApp_v1 {
     }
 
     // -----------------------------------------------------------------------
-    // Sample run
+    // Sample run used as first testing step during development. 
+    // Can be run with command-line argument "sample".
     // -----------------------------------------------------------------------
-
+    /* 
     static void runSample(Graph g) {
         System.out.println("=== TfL Application Version 1 — Sample Output ===\n");
 
@@ -891,6 +892,7 @@ public class TfLApp_v1 {
         System.out.println();
         g.printStationInfo(g.findStation("Baker Street").id);
     }
+    */
 
     // -----------------------------------------------------------------------
     // Entry point
