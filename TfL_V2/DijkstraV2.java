@@ -39,6 +39,7 @@ public class DijkstraV2 {
             this.stationId = stationId;
             this.dist = dist;
         }
+        @Override
         public int compareTo(Node other) {
             return Double.compare(this.dist, other.dist);
         }

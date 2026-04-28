@@ -675,38 +675,17 @@ public class TfLApp_v2 {
             catch (NumberFormatException e) { System.out.println("Enter a number."); continue; }
 
             switch (choice) {
-                case 0:
-                    System.out.println("Goodbye.");
-                    return;
-                case 1:
-                    listStations(g);
-                    break;
-                case 2:
-                    modifyDelay(g, sc, true);
-                    break;
-                case 3:
-                    modifyDelay(g, sc, false);
-                    break;
-                case 4:
-                    modifyTrack(g, sc, true);
-                    break;
-                case 5:
-                    modifyTrack(g, sc, false);
-                    break;
-                case 6:
-                    g.printClosed();
-                    break;
-                case 7:
-                    g.printDelayed();
-                    break;
-                case 8:
-                    findRoute(g, sc);
-                    break;
-                case 9:
-                    showStationInfo(g, sc);
-                    break;
-                default:
-                    System.out.println("Invalid option.");
+                case 0  -> { System.out.println("Goodbye."); return; }
+                case 1  -> listStations(g);
+                case 2  -> modifyDelay(g, sc, true);
+                case 3  -> modifyDelay(g, sc, false);
+                case 4  -> modifyTrack(g, sc, true);
+                case 5  -> modifyTrack(g, sc, false);
+                case 6  -> g.printClosed();
+                case 7  -> g.printDelayed();
+                case 8  -> findRoute(g, sc);
+                case 9  -> showStationInfo(g, sc);
+                default -> System.out.println("Invalid option.");
             }
         }
     }
@@ -872,15 +851,15 @@ public class TfLApp_v2 {
      */
     private static String reverseDirection(String direction) {
         if (direction == null) return null;
-        switch (direction) {
-            case "Eastbound":  return "Westbound";
-            case "Westbound":  return "Eastbound";
-            case "Northbound": return "Southbound";
-            case "Southbound": return "Northbound";
-            case "Inner":      return "Outer";
-            case "Outer":      return "Inner";
-            default:           return direction;
-        }
+        return switch (direction) {
+            case "Eastbound"  -> "Westbound";
+            case "Westbound"  -> "Eastbound";
+            case "Northbound" -> "Southbound";
+            case "Southbound" -> "Northbound";
+            case "Inner"      -> "Outer";
+            case "Outer"      -> "Inner";
+            default           -> direction;
+        };
     }
 
     // -----------------------------------------------------------------------
