@@ -67,32 +67,54 @@ public class Graph {
         return count;
     }
 
-    public boolean addDelay(int fromId, int toId, String line, String direction, double delay) {
+    /** Returns the number of edges to which the delay was added. */
+    public int addDelay(int fromId, int toId, String line, String direction, double delay) {
         Edge[] buf = new Edge[stations[fromId].getMaxEdges()];
         int n = matchEdges(fromId, toId, line, direction, buf);
         for (int i = 0; i < n; i++) buf[i].delay += delay;
-        return n > 0;
+        return n;
     }
 
-    public boolean removeDelay(int fromId, int toId, String line, String direction, double delay) {
+    /** Returns the number of edges that actually had a delay reduced (skips edges with no existing delay). */
+    public int removeDelay(int fromId, int toId, String line, String direction, double delay) {
         Edge[] buf = new Edge[stations[fromId].getMaxEdges()];
         int n = matchEdges(fromId, toId, line, direction, buf);
-        for (int i = 0; i < n; i++) buf[i].delay = Math.max(0, buf[i].delay - delay);
-        return n > 0;
+        int changed = 0;
+        for (int i = 0; i < n; i++) {
+            if (buf[i].delay > 0) {
+                buf[i].delay = Math.max(0, buf[i].delay - delay);
+                changed++;
+            }
+        }
+        return changed;
     }
 
-    public boolean closeTrack(int fromId, int toId, String line, String direction) {
+    /** Returns the number of edges that were actually closed (skips already-closed edges). */
+    public int closeTrack(int fromId, int toId, String line, String direction) {
         Edge[] buf = new Edge[stations[fromId].getMaxEdges()];
         int n = matchEdges(fromId, toId, line, direction, buf);
-        for (int i = 0; i < n; i++) buf[i].closed = true;
-        return n > 0;
+        int changed = 0;
+        for (int i = 0; i < n; i++) {
+            if (!buf[i].closed) {
+                buf[i].closed = true;
+                changed++;
+            }
+        }
+        return changed;
     }
 
-    public boolean openTrack(int fromId, int toId, String line, String direction) {
+    /** Returns the number of edges that were actually opened (skips already-open edges). */
+    public int openTrack(int fromId, int toId, String line, String direction) {
         Edge[] buf = new Edge[stations[fromId].getMaxEdges()];
         int n = matchEdges(fromId, toId, line, direction, buf);
-        for (int i = 0; i < n; i++) buf[i].closed = false;
-        return n > 0;
+        int changed = 0;
+        for (int i = 0; i < n; i++) {
+            if (buf[i].closed) {
+                buf[i].closed = false;
+                changed++;
+            }
+        }
+        return changed;
     }
 
     // -----------------------------------------------------------------------

@@ -1,30 +1,16 @@
 import java.util.Scanner;
 
-public class TfLApp_v1 {
+public class TfLApp_v2 {
 
     // -----------------------------------------------------------------------
-    // Network construction
+    // Network construction (data identical to V1 for fair benchmarking)
     // -----------------------------------------------------------------------
 
-    static Graph buildNetwork() {
-        Graph g = new Graph();
+    static GraphV2 buildNetwork() {
+        GraphV2 g = new GraphV2();
 
         // Stations listed once, in the order they first appear across all lines.
-        // Station name normalisation applied throughout:
-        //   BAKER STREET (MET/METROPOLITAN/CIRCLE) → Baker Street
-        //   PADDINGTON (H&C/CIRCLE/Dis)            → Paddington
-        //   KINGS CROSS / KINGS CROSS ST PANCRAS   → King's Cross St. Pancras
-        //   EUSTON (CX) / EUSTON (CITY)            → Euston
-        //   HIGHBURY                               → Highbury & Islington
-        //   HAMMERSMITH (H&C)                      → Hammersmith
-        //   WEST HAMSTEAD (Mildmay typo)           → West Hampstead
-        //   BRONDERSBURY / BRONDERSBURY PARK       → Brondesbury / Brondesbury Park
-        //   HAMSTEAD HEATH                         → Hampstead Heath
-        //   WILLESDEN JUNCTION A / D / JUNTION D   → Willesden Junction
-        //   KENSINGTON (OLYMPIA)                   → Kensington Olympia
-        //   SHEPHERDS BUSH (trailing spaces)       → Shepherd's Bush
-        //   ST JAMES PARK                          → St James's Park
-        //   MONUMENT (Circle/District)             → Bank  (same station complex as Bank)
+        // Same normalisation rules as V1.
 
         // Circle / H&C / Metropolitan (inner ring and shared track)
         g.addStation("Edgware Road");
@@ -43,7 +29,6 @@ public class TfLApp_v1 {
         g.addStation("Blackfriars");
         g.addStation("Mansion House");
         g.addStation("Cannon Street");
-        // Monument merged into Bank (same station complex; Circle/District edges below use "Bank")
         g.addStation("Tower Hill");
         g.addStation("Aldgate");
         g.addStation("Liverpool Street");
@@ -62,7 +47,7 @@ public class TfLApp_v1 {
         g.addStation("Ladbroke Grove");
         g.addStation("Westbourne Park");
         g.addStation("Royal Oak");
-        g.addStation("Aldgate East");       // H&C / District eastern terminus
+        g.addStation("Aldgate East");
 
         // Jubilee line
         g.addStation("Stanmore");
@@ -137,10 +122,6 @@ public class TfLApp_v1 {
         g.addStation("Russell Square");
 
         // Mildmay line (London Overground)
-        // Note: Shepherd's Bush (Mildmay/Overground) is a different station from
-        //       Shepherd's Bush Market (H&C/Circle), separated by a short walk.
-        // Note: Finchley Road & Frognal (Mildmay) is distinct from
-        //       Finchley Road (Jubilee/Metropolitan), a few minutes apart.
         g.addStation("Richmond");
         g.addStation("Kew Gardens");
         g.addStation("Gunnersbury");
@@ -184,17 +165,12 @@ public class TfLApp_v1 {
     }
 
     // -----------------------------------------------------------------------
-    // Per-line edge data (real times from TfL operational data)
+    // Per-line edge data (real times from TfL operational data, copied from V1)
     // Times differ between directions on almost every segment, so each
-    // direction is entered as a separate addEdge
+    // direction is entered as a separate addEdge.
     // -----------------------------------------------------------------------
 
-    private static void addCircle(Graph g) {
-        // Inner = anti-clockwise (Edgware Road → Paddington → south loop → City → back).
-        // Outer = clockwise (Hammersmith → H&C stem → Baker Street → City → south loop → back).
-        // The Circle route visits Paddington and Edgware Road twice each:
-        // once on the main loop and once on the western H&C stem to Hammersmith.
-
+    private static void addCircle(GraphV2 g) {
         // Inner — main loop
         g.addEdge("Edgware Road",            "Paddington",               "Circle", "Inner", 1.85);
         g.addEdge("Paddington",              "Bayswater",                "Circle", "Inner", 1.65);
@@ -211,8 +187,8 @@ public class TfLApp_v1 {
         g.addEdge("Temple",                  "Blackfriars",              "Circle", "Inner", 1.40);
         g.addEdge("Blackfriars",             "Mansion House",            "Circle", "Inner", 1.52);
         g.addEdge("Mansion House",           "Cannon Street",            "Circle", "Inner", 0.98);
-        g.addEdge("Cannon Street",           "Bank",                 "Circle", "Inner", 0.97);
-        g.addEdge("Bank",                "Tower Hill",               "Circle", "Inner", 1.80);
+        g.addEdge("Cannon Street",           "Bank",                     "Circle", "Inner", 0.97);
+        g.addEdge("Bank",                    "Tower Hill",               "Circle", "Inner", 1.80);
         g.addEdge("Tower Hill",              "Aldgate",                  "Circle", "Inner", 1.30);
         g.addEdge("Aldgate",                 "Liverpool Street",         "Circle", "Inner", 1.75);
         g.addEdge("Liverpool Street",        "Moorgate",                 "Circle", "Inner", 1.32);
@@ -254,8 +230,8 @@ public class TfLApp_v1 {
         g.addEdge("Moorgate",                "Liverpool Street",         "Circle", "Outer", 1.18);
         g.addEdge("Liverpool Street",        "Aldgate",                  "Circle", "Outer", 2.18);
         g.addEdge("Aldgate",                 "Tower Hill",               "Circle", "Outer", 1.37);
-        g.addEdge("Tower Hill",              "Bank",                 "Circle", "Outer", 1.48);
-        g.addEdge("Bank",                "Cannon Street",            "Circle", "Outer", 0.88);
+        g.addEdge("Tower Hill",              "Bank",                     "Circle", "Outer", 1.48);
+        g.addEdge("Bank",                    "Cannon Street",            "Circle", "Outer", 0.88);
         g.addEdge("Cannon Street",           "Mansion House",            "Circle", "Outer", 0.93);
         g.addEdge("Mansion House",           "Blackfriars",              "Circle", "Outer", 1.22);
         g.addEdge("Blackfriars",             "Temple",                   "Circle", "Outer", 1.37);
@@ -273,7 +249,7 @@ public class TfLApp_v1 {
         g.addEdge("Paddington",              "Edgware Road",             "Circle", "Outer", 2.15);
     }
 
-    private static void addHammersmithAndCity(Graph g) {
+    private static void addHammersmithAndCity(GraphV2 g) {
         // Eastbound: Hammersmith → Aldgate East
         g.addEdge("Hammersmith",             "Goldhawk Road",            "H & C", "Eastbound", 2.05);
         g.addEdge("Goldhawk Road",           "Shepherd's Bush Market",   "H & C", "Eastbound", 1.15);
@@ -309,13 +285,13 @@ public class TfLApp_v1 {
         g.addEdge("Royal Oak",               "Westbourne Park",          "H & C", "Westbound", 1.72);
         g.addEdge("Westbourne Park",         "Ladbroke Grove",           "H & C", "Westbound", 1.48);
         g.addEdge("Ladbroke Grove",          "Latimer Road",             "H & C", "Westbound", 1.28);
-        g.addEdge("Latimer Road",            "Wood Lane",                "H & C", "Westbound", 1.50); // blank in source; using eastbound value
-        g.addEdge("Wood Lane",               "Shepherd's Bush Market",   "H & C", "Westbound", 1.50); // blank in source; using eastbound value
+        g.addEdge("Latimer Road",            "Wood Lane",                "H & C", "Westbound", 1.50);
+        g.addEdge("Wood Lane",               "Shepherd's Bush Market",   "H & C", "Westbound", 1.50);
         g.addEdge("Shepherd's Bush Market",  "Goldhawk Road",            "H & C", "Westbound", 1.15);
         g.addEdge("Goldhawk Road",           "Hammersmith",              "H & C", "Westbound", 2.43);
     }
 
-    private static void addMetropolitan(Graph g) {
+    private static void addMetropolitan(GraphV2 g) {
         // Westbound: Aldgate → Baker Street
         g.addEdge("Aldgate",                 "Liverpool Street",         "Metropolitan", "Westbound", 1.75);
         g.addEdge("Liverpool Street",        "Moorgate",                 "Metropolitan", "Westbound", 1.32);
@@ -337,12 +313,11 @@ public class TfLApp_v1 {
         g.addEdge("Liverpool Street",        "Aldgate",                  "Metropolitan", "Eastbound", 2.18);
     }
 
-    private static void addDistrict(Graph g) {
-        // Westbound — two branches both terminating at Earl's Court.
-        // Branch 1 (main, via south): Aldgate East → Earl's Court
+    private static void addDistrict(GraphV2 g) {
+        // Westbound — Branch 1 (main, via south): Aldgate East → Earl's Court
         g.addEdge("Aldgate East",            "Tower Hill",               "District", "Westbound", 1.87);
-        g.addEdge("Tower Hill",              "Bank",                 "District", "Westbound", 1.48);
-        g.addEdge("Bank",                "Cannon Street",            "District", "Westbound", 0.88);
+        g.addEdge("Tower Hill",              "Bank",                     "District", "Westbound", 1.48);
+        g.addEdge("Bank",                    "Cannon Street",            "District", "Westbound", 0.88);
         g.addEdge("Cannon Street",           "Mansion House",            "District", "Westbound", 0.93);
         g.addEdge("Mansion House",           "Blackfriars",              "District", "Westbound", 1.22);
         g.addEdge("Blackfriars",             "Temple",                   "District", "Westbound", 1.37);
@@ -361,8 +336,7 @@ public class TfLApp_v1 {
         g.addEdge("Notting Hill Gate",       "High Street Kensington",   "District", "Westbound", 1.58);
         g.addEdge("High Street Kensington",  "Earl's Court",             "District", "Westbound", 2.72);
 
-        // Eastbound — two branches both originating at Earl's Court.
-        // Branch 1 (northern): Earl's Court → Edgware Road via High Street Kensington
+        // Eastbound — Branch 1 (northern): Earl's Court → Edgware Road
         g.addEdge("Earl's Court",            "High Street Kensington",   "District", "Eastbound", 3.05);
         g.addEdge("High Street Kensington",  "Notting Hill Gate",        "District", "Eastbound", 1.68);
         g.addEdge("Notting Hill Gate",       "Bayswater",                "District", "Eastbound", 1.77);
@@ -380,12 +354,12 @@ public class TfLApp_v1 {
         g.addEdge("Temple",                  "Blackfriars",              "District", "Eastbound", 1.40);
         g.addEdge("Blackfriars",             "Mansion House",            "District", "Eastbound", 1.52);
         g.addEdge("Mansion House",           "Cannon Street",            "District", "Eastbound", 0.98);
-        g.addEdge("Cannon Street",           "Bank",                 "District", "Eastbound", 0.97);
-        g.addEdge("Bank",                "Tower Hill",               "District", "Eastbound", 1.80);
+        g.addEdge("Cannon Street",           "Bank",                     "District", "Eastbound", 0.97);
+        g.addEdge("Bank",                    "Tower Hill",               "District", "Eastbound", 1.80);
         g.addEdge("Tower Hill",              "Aldgate East",             "District", "Eastbound", 1.88);
     }
 
-    private static void addJubilee(Graph g) {
+    private static void addJubilee(GraphV2 g) {
         // Eastbound: Stanmore → Stratford
         g.addEdge("Stanmore",                "Canons Park",              "Jubilee", "Eastbound", 1.95);
         g.addEdge("Canons Park",             "Queensbury",               "Jubilee", "Eastbound", 1.93);
@@ -443,7 +417,7 @@ public class TfLApp_v1 {
         g.addEdge("Canons Park",             "Stanmore",                 "Jubilee", "Westbound", 2.87);
     }
 
-    private static void addVictoria(Graph g) {
+    private static void addVictoria(GraphV2 g) {
         // Southbound: Walthamstow Central → Brixton
         g.addEdge("Walthamstow Central",     "Blackhorse Road",          "Victoria", "Southbound", 2.12);
         g.addEdge("Blackhorse Road",         "Tottenham Hale",           "Victoria", "Southbound", 1.90);
@@ -479,12 +453,7 @@ public class TfLApp_v1 {
         g.addEdge("Blackhorse Road",         "Walthamstow Central",      "Victoria", "Northbound", 2.12);
     }
 
-    private static void addNorthern(Graph g) {
-        // The Northern line has two separate branches through central London.
-        // Both branches share Euston.
-        // Dijkstra can route between branches at Euston at no extra interchange cost
-        // because both carry the same line+direction label "Northern (Southbound/Northbound)".
-
+    private static void addNorthern(GraphV2 g) {
         // Southbound — Charing Cross branch: Euston → Embankment
         g.addEdge("Euston",                  "Warren Street",            "Northern", "Southbound", 1.18);
         g.addEdge("Warren Street",           "Goodge Street",            "Northern", "Southbound", 1.07);
@@ -518,7 +487,7 @@ public class TfLApp_v1 {
         g.addEdge("Warren Street",           "Euston",                   "Northern", "Northbound", 1.18);
     }
 
-    private static void addBakerloo(Graph g) {
+    private static void addBakerloo(GraphV2 g) {
         // Southbound: Paddington → Embankment
         g.addEdge("Paddington",              "Edgware Road",             "Bakerloo", "Southbound", 1.57);
         g.addEdge("Edgware Road",            "Marylebone",               "Bakerloo", "Southbound", 1.12);
@@ -542,7 +511,7 @@ public class TfLApp_v1 {
         g.addEdge("Edgware Road",            "Paddington",               "Bakerloo", "Northbound", 1.62);
     }
 
-    private static void addCentral(Graph g) {
+    private static void addCentral(GraphV2 g) {
         // Eastbound: Notting Hill Gate → Liverpool Street
         g.addEdge("Notting Hill Gate",       "Queensway",                "Central", "Eastbound", 1.17);
         g.addEdge("Queensway",               "Lancaster Gate",           "Central", "Eastbound", 1.35);
@@ -570,7 +539,7 @@ public class TfLApp_v1 {
         g.addEdge("Queensway",               "Notting Hill Gate",        "Central", "Westbound", 1.17);
     }
 
-    private static void addPiccadilly(Graph g) {
+    private static void addPiccadilly(GraphV2 g) {
         // Eastbound: Earl's Court → King's Cross St. Pancras
         g.addEdge("Earl's Court",            "Gloucester Road",          "Piccadilly", "Eastbound", 1.37);
         g.addEdge("Gloucester Road",         "South Kensington",         "Piccadilly", "Eastbound", 1.28);
@@ -598,13 +567,7 @@ public class TfLApp_v1 {
         g.addEdge("Gloucester Road",         "Earl's Court",             "Piccadilly", "Westbound", 1.37);
     }
 
-    private static void addMildmay(Graph g) {
-        // Mildmay Line (London Overground). The line splits at Willesden Junction
-        // into three branches: Richmond, Clapham Junction, and Stratford.
-        // WILLESDEN JUNCTION A (Richmond branch) and WILLESDEN JUNCTION D
-        // (Clapham/Stratford branch) are merged into one node "Willesden Junction"
-        // so Dijkstra can route across branches at that station.
-
+    private static void addMildmay(GraphV2 g) {
         // Eastbound — Richmond branch: Richmond → Willesden Junction
         g.addEdge("Richmond",                "Kew Gardens",              "Mildmay", "Eastbound", 3.00);
         g.addEdge("Kew Gardens",             "Gunnersbury",              "Mildmay", "Eastbound", 3.00);
@@ -668,7 +631,7 @@ public class TfLApp_v1 {
         g.addEdge("Kew Gardens",             "Richmond",                 "Mildmay", "Westbound", 3.00);
     }
 
-    private static void addElizabeth(Graph g) {
+    private static void addElizabeth(GraphV2 g) {
         // Westbound: Liverpool Street → Paddington
         g.addEdge("Liverpool Street",        "Farringdon",               "Elizabeth", "Westbound", 2.00);
         g.addEdge("Farringdon",              "Tottenham Court Road",     "Elizabeth", "Westbound", 3.00);
@@ -683,18 +646,18 @@ public class TfLApp_v1 {
     }
 
     // -----------------------------------------------------------------------
-    // Terminal menu
+    // Terminal menu (mirrors V1's interface exactly)
     // -----------------------------------------------------------------------
 
-    static void showMenu(Graph g) {
+    static void showMenu(GraphV2 g) {
         try (Scanner sc = new Scanner(System.in)) {
             showMenuLoop(g, sc);
         }
     }
 
-    private static void showMenuLoop(Graph g, Scanner sc) {
+    private static void showMenuLoop(GraphV2 g, Scanner sc) {
         while (true) {
-            System.out.println("\n=== TfL Application (Version 1) ===");
+            System.out.println("\n=== TfL Application (Version 2) ===");
             System.out.println("1.  List stations");
             System.out.println("2.  Add delay");
             System.out.println("3.  Remove delay");
@@ -752,14 +715,14 @@ public class TfLApp_v1 {
     // Menu action helpers
     // -----------------------------------------------------------------------
 
-    private static void listStations(Graph g) {
+    private static void listStations(GraphV2 g) {
         System.out.println("Stations (" + g.getStationCount() + " total):");
         for (int i = 0; i < g.getStationCount(); i++) {
             System.out.printf("  %3d. %s%n", i + 1, g.getStation(i).name);
         }
     }
 
-    private static void modifyDelay(Graph g, Scanner sc, boolean adding) {
+    private static void modifyDelay(GraphV2 g, Scanner sc, boolean adding) {
         listStations(g);
         int from = pickStation(g, sc, "From station number: ") - 1;
         int to   = pickStation(g, sc, "To station number:   ") - 1;
@@ -778,7 +741,7 @@ public class TfLApp_v1 {
         String line      = null;
         String direction = null;
         if (pick > 0) {
-            Edge e = g.getEdgeBetween(from, to, pick);
+            EdgeV2 e = g.getEdgeBetween(from, to, pick);
             if (e == null) { System.out.println("Invalid selection."); return; }
             line      = e.line;
             direction = e.direction;
@@ -810,7 +773,7 @@ public class TfLApp_v1 {
         }
     }
 
-    private static void modifyTrack(Graph g, Scanner sc, boolean closing) {
+    private static void modifyTrack(GraphV2 g, Scanner sc, boolean closing) {
         listStations(g);
         int from = pickStation(g, sc, "From station number: ") - 1;
         int to   = pickStation(g, sc, "To station number:   ") - 1;
@@ -828,7 +791,7 @@ public class TfLApp_v1 {
         String line      = null;
         String direction = null;
         if (pick > 0) {
-            Edge e = g.getEdgeBetween(from, to, pick);
+            EdgeV2 e = g.getEdgeBetween(from, to, pick);
             if (e == null) { System.out.println("Invalid selection."); return; }
             line      = e.line;
             direction = e.direction;
@@ -857,15 +820,15 @@ public class TfLApp_v1 {
         }
     }
 
-    private static void findRoute(Graph g, Scanner sc) {
+    private static void findRoute(GraphV2 g, Scanner sc) {
         listStations(g);
         int from = pickStation(g, sc, "Start station number: ") - 1;
         int to   = pickStation(g, sc, "End station number:   ") - 1;
         if (from < 0 || to < 0) return;
-        Dijkstra.findFastestRoute(g, from, to);
+        DijkstraV2.findFastestRoute(g, from, to);
     }
 
-    private static void showStationInfo(Graph g, Scanner sc) {
+    private static void showStationInfo(GraphV2 g, Scanner sc) {
         listStations(g);
         int id = pickStation(g, sc, "Station number: ") - 1;
         if (id < 0) return;
@@ -876,7 +839,7 @@ public class TfLApp_v1 {
     // Input helpers
     // -----------------------------------------------------------------------
 
-    private static int pickStation(Graph g, Scanner sc, String prompt) {
+    private static int pickStation(GraphV2 g, Scanner sc, String prompt) {
         System.out.print(prompt);
         int n = readInt(sc);
         if (n < 1 || n > g.getStationCount()) {
@@ -921,11 +884,12 @@ public class TfLApp_v1 {
     }
 
     // -----------------------------------------------------------------------
-    // Sample run, to run with "java TfLApp sample"
+    // Sample run (matches V1's runSample so V1_output.txt and V2_output.txt
+    // can be diffed directly to confirm equivalent behaviour)
     // -----------------------------------------------------------------------
-    
-    static void runSample(Graph g) {
-        System.out.println("=== TfL Application Version 1 — Sample Output ===\n");
+
+    static void runSample(GraphV2 g) {
+        System.out.println("=== TfL Application Version 2 — Sample Output ===\n");
 
         // Engineer operations from spec section 2.2(1):
         //   add 5min delay to Victoria Southbound: Warren Street -> Oxford Circus
@@ -948,7 +912,7 @@ public class TfLApp_v1 {
 
         // Spec section 2.2(2)(i) reference route — exercises 2 interchanges.
         System.out.println();
-        Dijkstra.findFastestRoute(g,
+        DijkstraV2.findFastestRoute(g,
                 g.findStation("Marble Arch").id,
                 g.findStation("Great Portland Street").id);
 
@@ -962,7 +926,7 @@ public class TfLApp_v1 {
     // -----------------------------------------------------------------------
 
     public static void main(String[] args) {
-        Graph g = buildNetwork();
+        GraphV2 g = buildNetwork();
         if (args.length > 0 && args[0].equalsIgnoreCase("sample")) {
             runSample(g);
         } else {

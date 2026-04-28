@@ -202,7 +202,7 @@ public class Dijkstra {
             if (i > 1 && !ld.equals(currentLineDir)) {
                 // The passenger is standing at path[i-1] having arrived via
                 // currentLineDir; they must now change to ld before continuing.
-                System.out.printf("(%d) Change: %s  %s  to  %s  %.2fmin%n",
+                System.out.printf("(%d) Change: %s %s to %s %.2fmin%n",
                         step++,
                         g.getStation(path[i - 1]).name, // station where change happens
                         currentLineDir,                  // the line just ridden
