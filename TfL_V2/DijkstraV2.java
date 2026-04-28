@@ -10,27 +10,11 @@ import java.util.Set;
 public class DijkstraV2 {
 
     /*
-     Dijkstra's shortest-path algorithm — library-based implementation.
-
-     Algorithmically identical to V1: same interchange logic (track the line+direction
-     used to arrive at each station, charge INTERCHANGE_TIME when the next edge differs),
-     same relaxation rule, same path reconstruction.
-
-     The differences are purely in the data structures used to support the algorithm:
-
-       V1                                 →  V2
-       --                                    --
-       parallel arrays  (double[] dist,    →  HashMap<Integer, ...>
-                         int[] prev,
-                         Edge[] prevEdge,
-                         boolean[] visited)
-       linear scan for min-dist station   →  PriorityQueue<Node> (binary heap)
-       reverse with manual swap loop      →  Collections.reverse
-
-     Theoretical complexity changes:
-       V1 main loop:  O(V^2)        (V iterations × O(V) min-scan)
-       V2 main loop:  O((V+E) log V) (each edge can push one heap entry; lazy deletion)
-     */
+    Library-based version of Dijkstra. Same algorithm as V1, same interchange
+    rule, same output format. The working state uses HashMaps and a
+    PriorityQueue from java.util in place of the parallel arrays and linear
+    min-scan that V1 uses.
+    */
 
     private static class Node implements Comparable<Node> {
         final int stationId;
@@ -48,10 +32,8 @@ public class DijkstraV2 {
     public static void findFastestRoute(GraphV2 g, int startId, int endId) {
         int n = g.getStationCount();
 
-        // ── Step 1: Initialise working state ─────────────────────────────────
-        // V1 used parallel arrays indexed by station ID. V2 uses HashMaps keyed by ID.
-        // (Arrays would still work — using maps demonstrates the library swap, and
-        //  is the more typical idiom when station identifiers aren't dense integers.)
+        // Working state — same purpose as V1's parallel arrays, just stored
+        // in HashMaps keyed by station ID.
         Map<Integer, Double>  dist     = new HashMap<>();
         Map<Integer, Integer> prev     = new HashMap<>();
         Map<Integer, EdgeV2>  prevEdge = new HashMap<>();
@@ -60,34 +42,31 @@ public class DijkstraV2 {
         for (int i = 0; i < n; i++) dist.put(i, Double.MAX_VALUE);
         dist.put(startId, 0.0);
 
-        // The frontier — a min-heap on cumulative distance. PriorityQueue replaces
-        // V1's O(V) linear scan that picked the cheapest unvisited station each step.
+        // The frontier — a min-heap on cumulative distance. Replaces V1's
+        // linear scan to find the cheapest unvisited station each step.
         PriorityQueue<Node> pq = new PriorityQueue<>();
         pq.add(new Node(startId, 0.0));
 
-        // ── Step 2: Main Dijkstra loop ───────────────────────────────────────
         while (!pq.isEmpty()) {
             Node uNode = pq.poll();
             int u = uNode.stationId;
 
-            // Lazy deletion: a station may appear in the heap multiple times if
-            // it was relaxed more than once. Skip stale entries.
+            // A station can appear in the heap more than once if it was
+            // relaxed multiple times. Skip the stale entries.
             if (!visited.add(u)) continue;
 
-            // Destination settled — its dist is now permanent, so we can stop.
+            // Stop once the destination is settled
             if (u == endId) break;
 
-            // ── Step 2b: Relax all outgoing edges from u ─────────────────────
+            // Relax every edge leaving u
             StationV2 cur = g.getStation(u);
             for (EdgeV2 e : cur.getEdges()) {
                 int v = e.toId;
                 if (visited.contains(v)) continue;
                 if (e.closed) continue;
 
-                // ── Interchange cost ─────────────────────────────────────────
-                // Identical rule to V1: compare the line+direction of the edge we
-                // arrived at u on (prevEdge[u]) to the line+direction of the edge
-                // about to be ridden out of u. Different → 2-minute platform change.
+                // Same interchange rule as V1: compare the line+direction we
+                // arrived at u on (prevEdge[u]) to the edge we're about to ride.
                 // prevEdge.get(startId) returns null, so the first leg is free.
                 double interchange = 0;
                 EdgeV2 arriving = prevEdge.get(u);
@@ -107,17 +86,15 @@ public class DijkstraV2 {
             }
         }
 
-        // ── Step 3: Reachability check ───────────────────────────────────────
+        // No path was found
         if (dist.get(endId) == Double.MAX_VALUE) {
             System.out.println("No route found from " + g.getStation(startId).name
                     + " to " + g.getStation(endId).name + ".");
             return;
         }
 
-        // ── Step 4: Reconstruct the path ─────────────────────────────────────
-        // V1 walked the prev[] chain into pre-allocated arrays and reversed in place.
-        // V2 walks into ArrayLists and uses Collections.reverse — same behaviour.
-        // prev.get(startId) returns null, terminating the walk.
+        // Walk backwards from end to start. prev.get(startId) returns null,
+        // which terminates the loop.
         List<Integer> path = new ArrayList<>();
         List<EdgeV2>  pathEdges = new ArrayList<>();
         Integer at = endId;
@@ -132,10 +109,10 @@ public class DijkstraV2 {
         printRoute(g, startId, endId, path, pathEdges);
     }
 
-    // -----------------------------------------------------------------------
-    // Route output — identical format to V1 so the two versions can be diffed.
-    // -----------------------------------------------------------------------
-
+    /*
+    Prints the route in the numbered step format the spec requires.
+    Same output as V1 — the two versions can be diffed directly.
+    */
     private static void printRoute(GraphV2 g, int startId, int endId,
                                    List<Integer> path, List<EdgeV2> pathEdges) {
 
@@ -152,6 +129,7 @@ public class DijkstraV2 {
             EdgeV2 e  = pathEdges.get(i);
             String ld = e.lineDirection();
 
+            // Insert a Change step when the line+direction switches
             if (i > 1 && !ld.equals(currentLineDir)) {
                 System.out.printf("(%d) Change: %s %s to %s %.2fmin%n",
                         step++,
@@ -163,6 +141,7 @@ public class DijkstraV2 {
                 currentLineDir = ld;
             }
 
+            // Travel segment
             System.out.printf("(%d) %s: %s to %s %.2fmin%n",
                     step++,
                     ld,
