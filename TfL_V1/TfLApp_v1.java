@@ -1,5 +1,6 @@
 import java.util.Scanner;
-
+import java.io.PrintStream;
+import java.io.OutputStream;
 public class TfLApp_v1 {
 
     // -----------------------------------------------------------------------
@@ -841,7 +842,11 @@ public class TfLApp_v1 {
         int from = pickStation(g, sc, "Start station number: ") - 1;
         int to   = pickStation(g, sc, "End station number:   ") - 1;
         if (from < 0 || to < 0) return;
+        long start = System.nanoTime();
         Dijkstra.findFastestRoute(g, from, to);
+        long end = System.nanoTime();
+        System.out.println("Route found in: " + (end - start) + " ns");
+        System.out.println("Route found in: " + (end - start) / 1_000_000.0 + " ms");
     }
 
     private static void showStationInfo(Graph g, Scanner sc) {
@@ -899,6 +904,30 @@ public class TfLApp_v1 {
         };
     }
 
+    static void benchmarkRoutes(Graph g) {
+        int n = g.getStationCount();
+        long total = 0;
+        int count = 0;
+        PrintStream original = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        for (int from = 0; from < n; from++) {
+            for (int to = 0; to < n; to++) {
+                if (from == to) continue;
+                long start = System.nanoTime();
+                boolean found = Dijkstra.findFastestRoute(g, from, to);
+                long end = System.nanoTime();
+
+                if (found) {
+                total += (end - start);
+                count++;
+                }
+            }
+        }
+        System.setOut(original);
+        System.out.println("Average time: " + (total / count) / 1_000_000.0 + " ms");
+        System.out.println("Total routes tested: " + count);
+    }
+
     // -----------------------------------------------------------------------
     // Sample run, to run with "java TfLApp sample"
     // -----------------------------------------------------------------------
@@ -941,11 +970,17 @@ public class TfLApp_v1 {
     // -----------------------------------------------------------------------
 
     public static void main(String[] args) {
-        Graph g = buildNetwork();
-        if (args.length > 0 && args[0].equalsIgnoreCase("sample")) {
-            runSample(g);
-        } else {
-            showMenu(g);
-        }
+    Graph g = buildNetwork();
+    
+    // Warm-up run
+    Dijkstra.findFastestRoute(g, 0, g.getStationCount() - 1);
+    
+    benchmarkRoutes(g);
+    
+    if (args.length > 0 && args[0].equalsIgnoreCase("sample")) {
+        runSample(g);
+    } else {
+        showMenu(g);
     }
+}
 }
