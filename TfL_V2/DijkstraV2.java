@@ -29,7 +29,7 @@ public class DijkstraV2 {
         }
     }
 
-    public static void findFastestRoute(GraphV2 g, int startId, int endId) {
+    public static boolean findFastestRoute(GraphV2 g, int startId, int endId) {
         int n = g.getStationCount();
 
         // Working state — same purpose as V1's parallel arrays, just stored
@@ -90,7 +90,7 @@ public class DijkstraV2 {
         if (dist.get(endId) == Double.MAX_VALUE) {
             System.out.println("No route found from " + g.getStation(startId).name
                     + " to " + g.getStation(endId).name + ".");
-            return;
+            return false;
         }
 
         // Walk backwards from end to start. prev.get(startId) returns null,
@@ -107,6 +107,7 @@ public class DijkstraV2 {
         Collections.reverse(pathEdges);
 
         printRoute(g, startId, endId, path, pathEdges);
+        return true;
     }
 
     /*
